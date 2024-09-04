@@ -54,8 +54,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { ref } from "vue";
 import { RequestOption, UploadRequest } from "@arco-design/web-vue";
+// @ts-ignore
 import aDownload from './components/a-download.vue';
 
 const currTs = () => new Date().getTime();
@@ -71,7 +72,7 @@ const newData = ref<string>("");
 
 const itemIdDict = ref<{ [key: string]: number }>({});
 
-const langDict = {
+const langDict: { [key: string]: string } = {
   "zh-cn": "chs",
   "zh-tw": "cht",
   "de-de": "de",
@@ -87,7 +88,7 @@ const langDict = {
   "vi-vn": "vi",
 }
 
-function refreshItemIdDict(lang) {
+function refreshItemIdDict(lang: string) {
   const dictUrl = `https://api.uigf.org/dict/genshin/${lang}.json`
   fetch(dictUrl)
     .then(res => res.json())
@@ -114,14 +115,19 @@ function parseOldData() {
       return;
     }
 
-    alert('Invalid data');
+    if (data.info.srgf_version) {
+      alert("暂不支持 SRGF 文件");
+      return;
+    }
+
+    alert('无效 UIGF 文件');
   }
   catch (e) {
     console.error(e);
   }
 }
 
-function parseUIGF2or3(data) {
+function parseUIGF2or3(data: any) {
   exportApp.value = `${data.info.export_app} ${data.info.export_app_version}`;
   exportTime.value = data.info.export_time;
   uid.value = data.info.uid;
@@ -150,8 +156,8 @@ function parseUIGF2or3(data) {
   }, null, 2);
 }
 
-function upgradeUIGFItems(oldItems) {
-  const newItems = [];
+function upgradeUIGFItems(oldItems: any[]) {
+  const newItems: any[] = [];
   oldItems.forEach(item => {
     const newItem = {
       uigf_gacha_type: item.uigf_gacha_type,
@@ -161,8 +167,10 @@ function upgradeUIGFItems(oldItems) {
     }
 
     if (item.item_id) {
+    // @ts-ignore
       newItem.item_id = item.item_id;
     } else {
+      // @ts-ignore
       newItem.item_id = itemIdDict.value[item.name];
     }
 
@@ -172,7 +180,7 @@ function upgradeUIGFItems(oldItems) {
   return newItems;
 }
 
-function parseUIGF4(data) {
+function parseUIGF4(data: any) {
   exportApp.value = `${data.info.export_app} ${data.info.export_app_version}`;
   exportTime.value = new Date(data.info.export_timestamp * 1000).toLocaleString();
 
