@@ -66,7 +66,7 @@ const exportApp = ref<string>("");
 const exportTime = ref<string>("");
 const uid = ref<string>("");
 const exportLanguage = ref<string>("");
-const serverTimezoneOffset = ref<string>("");
+const serverTimezoneOffset = ref<number>();
 const oldData = ref<string>("");
 const newData = ref<string>("");
 
@@ -132,7 +132,25 @@ function parseUIGF2or3(data: any) {
   exportTime.value = data.info.export_time;
   uid.value = data.info.uid;
   exportLanguage.value = data.info.lang;
-  serverTimezoneOffset.value = data.info.region_time_zone;
+
+  if (data.info.region_time_zone) {
+    serverTimezoneOffset.value = data.info.region_time_zone;
+  } else {
+    const currentUid = data.info.uid;
+
+    switch (currentUid[currentUid.length - 9])
+    {
+      case "6":
+        serverTimezoneOffset.value = -5;
+        break;
+      case "7":
+        serverTimezoneOffset.value = 1;
+        break;
+      default:
+        serverTimezoneOffset.value = 8;
+        break;
+    }
+  }
 
   const lang = langDict[data.info.lang];
   if (lang) {
@@ -144,12 +162,12 @@ function parseUIGF2or3(data: any) {
       version: "v4.0",
       export_app: "UIGF Upgrader",
       export_app_version: "0.1.0",
-      export_timestamp: new Date(data.info.export_time).getTime() / 1000,
+      export_timestamp: Math.floor(new Date().getTime() / 1000),
     },
     hk4e: [
       {
-        uid: data.info.uid,
-        timezone: data.info.region_time_zone,
+        uid: uid.value,
+        timezone: serverTimezoneOffset.value,
         list: upgradeUIGFItems(data.list)
       }
     ],
@@ -321,14 +339,5 @@ function uploadFile(option: RequestOption): UploadRequest {
   width: auto;
   padding: 5px;
   margin-bottom: 10px;
-}
-
-.error-path {
-  font-weight: bold;
-  color: #D14748;
-}
-
-.error-message {
-  color: #EC407A;
 }
 </style>
