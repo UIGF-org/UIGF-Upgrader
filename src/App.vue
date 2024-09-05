@@ -71,7 +71,7 @@ const serverTimezoneOffsetModel = ref<string>("");
 const oldData = ref<string>("");
 const newData = ref<string>("");
 
-watch(serverTimezoneOffset, (val) => {
+watch(serverTimezoneOffset, (val: number) => {
   serverTimezoneOffsetModel.value = val.toString();
 });
 
