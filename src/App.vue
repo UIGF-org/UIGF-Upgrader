@@ -38,7 +38,7 @@
           </div>
           <div class="parsed-data">
             <div class="data-title">服务器时区偏移</div>
-            <a-textarea class="parsed-data-box" v-model="serverTimezoneOffset" readonly auto-size />
+            <a-textarea class="parsed-data-box" v-model="serverTimezoneOffsetModel" readonly auto-size />
           </div>
         </div>
         <a-textarea class="old-uigf-data-box" v-model="oldData" readonly auto-size />
