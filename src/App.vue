@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import {ref, watch} from "vue";
 import { RequestOption, UploadRequest } from "@arco-design/web-vue";
 // @ts-ignore
 import aDownload from './components/a-download.vue';
@@ -67,8 +67,13 @@ const exportTime = ref<string>("");
 const uid = ref<string>("");
 const exportLanguage = ref<string>("");
 const serverTimezoneOffset = ref<number>();
+const serverTimezoneOffsetModel = ref<string>("");
 const oldData = ref<string>("");
 const newData = ref<string>("");
+
+watch(serverTimezoneOffset, (val) => {
+  serverTimezoneOffsetModel.value = val.toString();
+});
 
 const itemIdDict = ref<{ [key: string]: number }>({});
 
