@@ -133,7 +133,7 @@ function parseOldData() {
   }
 }
 
-function parseUIGF2or3(data: any) {
+async function parseUIGF2or3(data: any) {
   exportApp.value = `${data.info.export_app} ${data.info.export_app_version}`;
   exportTime.value = data.info.export_time;
   uid.value = data.info.uid;
@@ -159,7 +159,7 @@ function parseUIGF2or3(data: any) {
 
   const lang = langDict[data.info.lang];
   if (lang) {
-    refreshItemIdDict(lang);
+    await refreshItemIdDict(lang);
   }
 
   newData.value = JSON.stringify({
