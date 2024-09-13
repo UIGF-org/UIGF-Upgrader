@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, watch} from "vue";
+import { ref, watch } from "vue";
 import { RequestOption, UploadRequest } from "@arco-design/web-vue";
 // @ts-ignore
 import aDownload from './components/a-download.vue';
@@ -95,16 +95,15 @@ const langDict: { [key: string]: string } = {
   "vi-vn": "vi",
 }
 
-function refreshItemIdDict(lang: string) {
+async function refreshItemIdDict(lang: string) {
   const dictUrl = `https://api.uigf.org/dict/genshin/${lang}.json`
-  fetch(dictUrl)
-    .then(res => res.json())
-    .then(data => {
-      itemIdDict.value = data;
-    })
-    .catch(err => {
-      console.error(err);
-    });
+  try {
+    const res = await fetch(dictUrl);
+    const data = await res.json();
+    itemIdDict.value = data;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 function parseOldData() {
@@ -145,8 +144,7 @@ function parseUIGF2or3(data: any) {
   } else {
     const currentUid = data.info.uid;
 
-    switch (currentUid[currentUid.length - 9])
-    {
+    switch (currentUid[currentUid.length - 9]) {
       case "6":
         serverTimezoneOffset.value = -5;
         break;
@@ -192,11 +190,11 @@ function upgradeUIGFItems(oldItems: any[]) {
     }
 
     if (item.item_id) {
-    // @ts-ignore
+      // @ts-ignore
       newItem.item_id = item.item_id;
     } else {
       // @ts-ignore
-      newItem.item_id = itemIdDict.value[item.name];
+      newItem.item_id = itemIdDict.value[item.name].toString();
     }
 
     newItems.push(newItem);
