@@ -54,8 +54,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { RequestOption, UploadRequest } from "@arco-design/web-vue";
+import {ref, watch} from "vue";
+import {RequestOption, UploadRequest} from "@arco-design/web-vue";
 // @ts-ignore
 import aDownload from './components/a-download.vue';
 
@@ -99,8 +99,7 @@ async function refreshItemIdDict(lang: string) {
   const dictUrl = `https://api.uigf.org/dict/genshin/${lang}.json`
   try {
     const res = await fetch(dictUrl);
-    const data = await res.json();
-    itemIdDict.value = data;
+    itemIdDict.value = await res.json();
   } catch (err) {
     console.error(err);
   }
