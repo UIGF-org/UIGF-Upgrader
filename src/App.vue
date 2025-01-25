@@ -126,7 +126,7 @@ function parseOldData() {
       return;
     }
 
-    alert('无效 UIGF 文件');
+    alert("无效 UIGF 文件");
   }
   catch (e) {
     console.error(e);
@@ -155,6 +155,11 @@ async function parseUIGF2or3(data: any) {
         serverTimezoneOffset.value = 8;
         break;
     }
+  }
+
+  if (data.list && data.list.length == 0) {
+    newData.value = "文件中不包含任意抽卡记录，无需升级";
+    return;
   }
 
   const lang = langDict[data.info.lang];
@@ -225,6 +230,7 @@ function uploadFile(option: RequestOption): UploadRequest {
   try {
     reader.onload = (e) => {
       oldData.value = e.target?.result as string;
+      newData.value = "";
       parseOldData();
     };
     reader.readAsText(file);
