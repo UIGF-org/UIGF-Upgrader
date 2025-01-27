@@ -3,17 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@10.0.1",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fmt": "prettier --write src/**/*.json"
   },
   "dependencies": {
+    "ajv": "^8.17.1",
     "vue": "^3.5.13"
   },
   "devDependencies": {
     "@arco-design/web-vue": "^2.56.3",
     "@vitejs/plugin-vue": "^5.2.1",
+    "prettier": "^3.4.2",
     "typescript": "^5.7.3",
     "vite": "^6.0.11",
     "vue-tsc": "^2.2.0"
