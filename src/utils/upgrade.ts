@@ -14,7 +14,6 @@ function getExportInfo(): UIGF4.Info {
         export_app: "UigfUpgrader",
         export_app_version: "2.0.0",
         export_timestamp: Math.floor(Date.now() / 1000).toString(),
-        lang: "zh-cn",
         version: "v4.0"
     };
 }
@@ -30,28 +29,49 @@ function upgradeSRGF1(data: SRGF1.Schema): UIGF4.SchemaHkrpg {
     const userData: UIGF4.Item<UIGF4.HkrpgItem> = {
         uid: data.info.uid,
         timezone: data.info.region_time_zone,
-        lang: "zh-cn",
         list: [],
     };
     for (const item of data.list) {
-        const userDataItem: UIGF4.HkrpgItem = {
+        userData.list.push({
             gacha_id: item.gacha_id,
             gacha_type: item.gacha_type,
             item_id: item.item_id,
-            count: item.count,
             time: item.time,
-            name: item.name,
-            item_type: item.item_type,
-            rank_type: item.rank_type,
             id: item.id,
-        };
-        userData.list.push(userDataItem);
+        });
     }
     return {info: info, hkrpg: [userData]};
 }
 
+/**
+ * @description 升级Uigf3
+ * @since 2.0.0
+ * @param {UIGF3.Schema} data - UIGF3数据
+ * @returns {UIGF4.SchemaHk4e}
+ */
+function upgradeUigf3(data: UIGF3.Schema): UIGF4.SchemaHk4e {
+    const info = getExportInfo();
+    const userData: UIGF4.Item<UIGF4.Hk4eItem> = {
+        uid: data.info.uid,
+        timezone: 8,
+        list: [],
+    };
+    for (const item of data.list) {
+        userData.list.push({
+            uigf_gacha_type: item.uigf_gacha_type,
+            gacha_type: item.gacha_type,
+            id: item.id,
+            item_id: item.item_id,
+            time: item.time,
+        });
+    }
+    return {info: info, hk4e: [userData]};
+}
+
+// 升级工具
 const upgradeTool = {
     srgf: upgradeSRGF1,
+    uigf3: upgradeUigf3,
 };
 
 export default upgradeTool;
