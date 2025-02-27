@@ -12,7 +12,7 @@ import uigf3Schema from "../schema/uigf-3.0-schema.json" with { type: "json" };
 import uigf4Schema from "../schema/uigf-4.0-schema.json" with { type: "json" };
 import Ajv, { type ErrorObject } from "ajv";
 
-enum JsonParseType {
+export const enum JsonParseType {
   Srgf,
   Uigf22,
   Uigf23,

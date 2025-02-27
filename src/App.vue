@@ -12,74 +12,44 @@
     </div>
     <div class="uigf-body">
       <div class="uigf-instance">
-        <div class="data-title">Old UIGF Data</div>
-        <div class="parsed-data-container">
-          <div class="parsed-data">
-            <div class="data-title">UIGF 版本</div>
-            <a-textarea class="parsed-data-box" v-model="uigfVersion" readonly auto-size />
-          </div>
-          <div class="parsed-data">
-            <div class="data-title">导出 App</div>
-            <a-textarea class="parsed-data-box" v-model="exportApp" readonly auto-size />
-          </div>
-          <div class="parsed-data">
-            <div class="data-title">导出时间</div>
-            <a-textarea class="parsed-data-box" v-model="exportTime" readonly auto-size />
-          </div>
+        <div class="data-title">Old Data</div>
+        <div class="json-box">
+          <vue-json-pretty :data="oldJson" v-if="oldJson" />
+          <vue-json-pretty :data="oldData" v-else />
         </div>
-        <div class="parsed-data-container">
-          <div class="parsed-data">
-            <div class="data-title">UID</div>
-            <a-textarea class="parsed-data-box" v-model="uid" readonly auto-size />
-          </div>
-          <div class="parsed-data">
-            <div class="data-title">导出语言</div>
-            <a-textarea class="parsed-data-box" v-model="exportLanguage" readonly auto-size />
-          </div>
-          <div class="parsed-data">
-            <div class="data-title">服务器时区偏移</div>
-            <a-textarea class="parsed-data-box" v-model="serverTimezoneOffsetModel" readonly auto-size />
-          </div>
-        </div>
-        <a-textarea class="old-uigf-data-box" v-model="oldData" readonly auto-size />
       </div>
       <div class="uigf-instance">
-        <div class="data-title">
-          <span>New UIGF Data</span>
+        <div class="data-title">New Data</div>
+        <div class="json-box">
+          <vue-json-pretty :data="newData" />
         </div>
-        <a-textarea class="uigf-data-box" v-model="newData" readonly auto-size />
       </div>
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
-import {ref, watch} from "vue";
-import {RequestOption, UploadRequest} from "@arco-design/web-vue";
-// @ts-ignore
-import aDownload from './components/a-download.vue';
+import { ref, shallowRef, watch } from "vue";
+import { Message, RequestOption, UploadRequest } from "@arco-design/web-vue";
+import VueJsonPretty from "vue-json-pretty";
+import "vue-json-pretty/lib/styles.css";
+import aDownload from "./components/a-download.vue";
+import parseJson, { JsonParseType } from "./utils/parseJson.ts";
+import upgradeTool from "./utils/upgrade.ts";
 
 const currTs = () => new Date().getTime();
 
-const uigfVersion = ref<string>("");
-const exportApp = ref<string>("");
-const exportTime = ref<string>("");
-const uid = ref<string>("");
-const exportLanguage = ref<string>("");
 const serverTimezoneOffset = ref<number>();
 const serverTimezoneOffsetModel = ref<string>("");
 const oldData = ref<string>("");
-const newData = ref<string>("");
+const oldJson = shallowRef<Record<string, unknown>>();
+const newData = shallowRef<UIGF4.Schema>();
+const itemIdDict = shallowRef<Record<string, number>>();
 
-// @ts-ignore
 watch(serverTimezoneOffset, (val) => {
-  // @ts-ignore
-  serverTimezoneOffsetModel.value = val.toString();
+  if (val) serverTimezoneOffsetModel.value = val.toString();
 });
 
-const itemIdDict = ref<{ [key: string]: number }>({});
-
-const langDict: { [key: string]: string } = {
+const langDict: Readonly<Record<string, string>> = {
   "zh-cn": "chs",
   "zh-tw": "cht",
   "de-de": "de",
@@ -93,125 +63,64 @@ const langDict: { [key: string]: string } = {
   "ru-ru": "ru",
   "th-th": "th",
   "vi-vn": "vi",
-}
+};
 
-async function refreshItemIdDict(lang: string) {
-  const dictUrl = `https://api.uigf.org/dict/genshin/${lang}.json`
+async function refreshItemIdDict(lang: string): Promise<void> {
+  const dictUrl = `https://api.uigf.org/dict/genshin/${lang}.json`;
   try {
     const res = await fetch(dictUrl);
     itemIdDict.value = await res.json();
   } catch (err) {
+    Message.error(`获取物品 ID 字典失败: ${JSON.stringify(err)}`);
     console.error(err);
   }
 }
 
-function parseOldData() {
-  const data = JSON.parse(oldData.value);
-  try {
-    if (data.info.version) {
-      uigfVersion.value = data.info.version;
-      parseUIGF4(data);
-      return;
-    }
-
-    if (data.info.uigf_version) {
-      uigfVersion.value = data.info.uigf_version;
-      parseUIGF2or3(data);
-      return;
-    }
-
-    if (data.info.srgf_version) {
-      alert("暂不支持 SRGF 文件");
-      return;
-    }
-
-    alert("无效 UIGF 文件");
-  }
-  catch (e) {
-    console.error(e);
-  }
-}
-
-async function parseUIGF2or3(data: any) {
-  exportApp.value = `${data.info.export_app} ${data.info.export_app_version}`;
-  exportTime.value = data.info.export_time;
-  uid.value = data.info.uid;
-  exportLanguage.value = data.info.lang;
-
-  if (data.info.region_time_zone) {
-    serverTimezoneOffset.value = data.info.region_time_zone;
-  } else {
-    const currentUid = data.info.uid;
-
-    switch (currentUid[currentUid.length - 9]) {
-      case "6":
-        serverTimezoneOffset.value = -5;
-        break;
-      case "7":
-        serverTimezoneOffset.value = 1;
-        break;
-      default:
-        serverTimezoneOffset.value = 8;
-        break;
-    }
-  }
-
-  if (data.list && data.list.length == 0) {
-    newData.value = "文件中不包含任意抽卡记录，无需升级";
+async function tryParseJson(data: string): Promise<void> {
+  const res = parseJson(data);
+  if (res.type === JsonParseType.Error) {
+    Message.error(res.data);
     return;
   }
-
-  const lang = langDict[data.info.lang];
-  if (lang) {
-    await refreshItemIdDict(lang);
+  oldJson.value = JSON.parse(data);
+  if (res.type === JsonParseType.Invalid) {
+    Message.error("无效的 JSON 文件");
+    return;
   }
-
-  newData.value = JSON.stringify({
-    info: {
-      version: "v4.0",
-      export_app: "UIGF Upgrader",
-      export_app_version: "0.1.0",
-      export_timestamp: Math.floor(new Date().getTime() / 1000),
-    },
-    hk4e: [
-      {
-        uid: uid.value,
-        timezone: serverTimezoneOffset.value,
-        list: upgradeUIGFItems(data.list)
-      }
-    ],
-  }, null, 2);
-}
-
-function upgradeUIGFItems(oldItems: any[]) {
-  const newItems: any[] = [];
-  oldItems.forEach(item => {
-    const newItem = {
-      uigf_gacha_type: item.uigf_gacha_type,
-      gacha_type: item.gacha_type,
-      time: item.time,
-      id: item.id,
+  if (res.type === JsonParseType.Unknown) {
+    Message.warning(res.data);
+    return;
+  }
+  if (res.type === JsonParseType.Uigf4) {
+    Message.info("当前文件已是 UIGF4 格式");
+    return;
+  }
+  let updateRes: UIGF4.Schema;
+  if (res.type === JsonParseType.Uigf22) {
+    // todo 未指定语言时，让用户选择语言
+    const lang = langDict[res.data.info.lang ?? "zh-cn"];
+    await refreshItemIdDict(lang);
+    if (!itemIdDict.value) {
+      Message.error("获取物品 ID 字典失败");
+      return;
     }
-
-    if (item.item_id) {
-      // @ts-ignore
-      newItem.item_id = item.item_id;
-    } else {
-      // @ts-ignore
-      newItem.item_id = itemIdDict.value[item.name].toString();
-    }
-
-    newItems.push(newItem);
-  });
-
-  return newItems;
-}
-
-function parseUIGF4(data: any) {
-  exportApp.value = `${data.info.export_app} ${data.info.export_app_version}`;
-  exportTime.value = new Date(data.info.export_timestamp * 1000).toLocaleString();
-
-  newData.value = "无需升级，当前文件已是 UIGF4 格式";
+    updateRes = upgradeTool.uigf2o(res.data, itemIdDict.value);
+  }
+  switch (res.type) {
+    case JsonParseType.Srgf:
+      updateRes = upgradeTool.srgf(res.data);
+      break;
+    case JsonParseType.Uigf23:
+    case JsonParseType.Uigf24:
+      updateRes = upgradeTool.uigf2(res.data);
+      break;
+    case JsonParseType.Uigf3:
+      updateRes = upgradeTool.uigf3(res.data);
+      break;
+    default:
+      return;
+  }
+  newData.value = updateRes;
 }
 
 function uploadFile(option: RequestOption): UploadRequest {
@@ -220,8 +129,8 @@ function uploadFile(option: RequestOption): UploadRequest {
     option.onError();
     return {};
   }
-  if (file.name.split('.').pop() !== 'json') {
-    alert('Please upload a json file');
+  if (file.name.split(".").pop() !== "json") {
+    Message.warning("Please upload a json file");
     option.onError();
     return {};
   }
@@ -229,8 +138,7 @@ function uploadFile(option: RequestOption): UploadRequest {
   try {
     reader.onload = (e) => {
       oldData.value = e.target?.result as string;
-      newData.value = "";
-      parseOldData();
+      tryParseJson(oldData.value);
     };
     reader.readAsText(file);
     option.onSuccess();
@@ -240,9 +148,7 @@ function uploadFile(option: RequestOption): UploadRequest {
   return {};
 }
 </script>
-
-
-<style lang="css" scoped>
+<style lang="scss" scoped>
 .app-container {
   position: relative;
   margin: 20px;
@@ -284,6 +190,8 @@ function uploadFile(option: RequestOption): UploadRequest {
   display: flex;
   width: 100%;
   justify-content: space-between;
+  column-gap: 12px;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
@@ -291,7 +199,7 @@ function uploadFile(option: RequestOption): UploadRequest {
     flex-direction: column;
   }
 
-  .uigf-body>.uigf-instance {
+  .uigf-body > .uigf-instance {
     width: 100%;
   }
 }
@@ -326,28 +234,14 @@ function uploadFile(option: RequestOption): UploadRequest {
   column-gap: 10px;
 }
 
-.old-uigf-data-box {
+.json-box {
   width: 100%;
+  height: 100%;
   display: flex;
-  flex: 1;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
   overflow-y: auto;
-}
-
-.uigf-data-box {
-  width: 100%;
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow-y: auto;
-}
-
-.parsed-data-box {
-  width: auto;
-  padding: 5px;
-  margin-bottom: 10px;
+  box-sizing: border-box;
 }
 </style>
