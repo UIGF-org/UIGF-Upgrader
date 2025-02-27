@@ -29,12 +29,7 @@
           "description": "The UIGF version of the exported archive, formatted as 'v{major}.{minor}', e.g., v4.0"
         }
       },
-      "required": [
-        "export_timestamp",
-        "export_app",
-        "export_app_version",
-        "version"
-      ]
+      "required": ["export_timestamp", "export_app", "export_app_version", "version"]
     },
     "hk4e": {
       "type": "array",
@@ -125,13 +120,7 @@
                   "pattern": "^[0-9]+$"
                 }
               },
-              "required": [
-                "uigf_gacha_type",
-                "gacha_type",
-                "item_id",
-                "time",
-                "id"
-              ]
+              "required": ["uigf_gacha_type", "gacha_type", "item_id", "time", "id"]
             }
           }
         },
