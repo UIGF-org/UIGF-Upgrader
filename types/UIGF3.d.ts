@@ -27,7 +27,7 @@ declare namespace UIGF3 {
    * @property {string} export_time - 导出时间
    * @property {string} export_app_version - 导出应用版本
    * @property {string} uigf_version - UIGF版本
-   * @property {string} region_time_zone - 时区
+   * @property {number} region_time_zone - 时区
    * @returns Info
    */
   type Info = {
@@ -38,7 +38,7 @@ declare namespace UIGF3 {
     export_time?: string;
     export_app_version?: string;
     uigf_version: string;
-    region_time_zone?: string;
+    region_time_zone?: number;
   };
 
   /**
