@@ -1,0 +1,6 @@
+# JetBrains IDE Setting
+.idea
+# Visual Studio Code Setting
+.vscode
+# Pnpm
+pnpm-lock.yaml
