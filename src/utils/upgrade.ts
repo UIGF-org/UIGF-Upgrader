@@ -4,6 +4,8 @@
  * @since 2.0.0
  */
 
+import { Message } from "@arco-design/web-vue";
+
 /**
  * @description 获取导出header
  * @since 2.0.0
@@ -108,11 +110,45 @@ function upgradeUigf2(data: UIGF2.Schema3 | UIGF2.Schema4): UIGF4.SchemaHk4e {
   return { info: info, hk4e: [userData] };
 }
 
+/**
+ * @description 升级uigf2.2
+ * @since 2.0.0
+ * @param {UIGF2.Schema2} data - UIGF2.2数据
+ * @param {Record<string,number>} dict - 名称字典
+ * @returns {UIGF4.SchemaHk4e}
+ */
+function upgradeUigf2_2(data: UIGF2.Schema2, dict: Record<string, number>): UIGF4.SchemaHk4e {
+  const info = getExportInfo();
+  const userData: UIGF4.Item<UIGF4.Hk4eItem> = {
+    uid: data.info.uid,
+    timezone: getTimeZoneByUid(data.info.uid),
+    list: [],
+  };
+  for (const item of data.list) {
+    let item_id;
+    if (item.item_id) item_id = item.item_id;
+    else if (item.name in dict) item_id = dict[item.name];
+    else {
+      Message.error(`未找到物品ID: ${item.name}`);
+      continue;
+    }
+    userData.list.push({
+      uigf_gacha_type: item.uigf_gacha_type,
+      gacha_type: item.gacha_type,
+      id: item.id,
+      item_id: item_id.toString(),
+      time: item.time,
+    });
+  }
+  return { info: info, hk4e: [userData] };
+}
+
 // 升级工具
 const upgradeTool = {
   srgf: upgradeSRGF1,
   uigf3: upgradeUigf3,
   uigf2: upgradeUigf2,
+  uigf2o: upgradeUigf2_2,
 };
 
 export default upgradeTool;
