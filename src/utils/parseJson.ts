@@ -5,6 +5,7 @@
  */
 
 import srgf1Schema from "../schema/srgf-1.0-schema.json" with { type: "json" };
+import uigf2Schema2 from "../schema/uigf-2.2-schema.json" with { type: "json" };
 import uigf2Schema3 from "../schema/uigf-2.3-schema.json" with { type: "json" };
 import uigf2Schema4 from "../schema/uigf-2.4-schema.json" with { type: "json" };
 import uigf3Schema from "../schema/uigf-3.0-schema.json" with { type: "json" };
@@ -13,6 +14,7 @@ import Ajv, { type ErrorObject } from "ajv";
 
 enum JsonParseType {
   Srgf,
+  Uigf22,
   Uigf23,
   Uigf24,
   Uigf3,
@@ -24,6 +26,7 @@ enum JsonParseType {
 
 type JsonParseRes =
   | { type: JsonParseType.Srgf; data: SRGF1.Schema }
+  | { type: JsonParseType.Uigf22; data: UIGF2.Schema2 }
   | { type: JsonParseType.Uigf23; data: UIGF2.Schema3 }
   | { type: JsonParseType.Uigf24; data: UIGF2.Schema4 }
   | { type: JsonParseType.Uigf3; data: UIGF3.Schema }
@@ -49,6 +52,8 @@ function parseJson(jsonStr: string): JsonParseRes {
     }
     if ("uigf_version" in json.info) {
       switch (json.info.uigf_version) {
+        case "v2.2":
+          return validateJson(jsonStr, JsonParseType.Uigf22);
         case "v2.3":
           return validateJson(jsonStr, JsonParseType.Uigf23);
         case "v2.4":
@@ -82,6 +87,8 @@ function validateJson(jsonStr: string, type: JsonParseType): JsonParseRes {
     switch (type) {
       case JsonParseType.Srgf:
         return srgf1Schema;
+      case JsonParseType.Uigf22:
+        return uigf2Schema2;
       case JsonParseType.Uigf23:
         return uigf2Schema3;
       case JsonParseType.Uigf24:
