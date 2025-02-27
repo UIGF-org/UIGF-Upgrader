@@ -4,12 +4,12 @@
  * @since 2.0.0
  */
 
-import srgf1Schema from "../schema/srgf-1.0-schema.json" with { type: "json" };
-import uigf2Schema2 from "../schema/uigf-2.2-schema.json" with { type: "json" };
-import uigf2Schema3 from "../schema/uigf-2.3-schema.json" with { type: "json" };
-import uigf2Schema4 from "../schema/uigf-2.4-schema.json" with { type: "json" };
-import uigf3Schema from "../schema/uigf-3.0-schema.json" with { type: "json" };
-import uigf4Schema from "../schema/uigf-4.0-schema.json" with { type: "json" };
+import srgf1Schema from "@schema/srgf-1.0-schema.json" with { type: "json" };
+import uigf2Schema2 from "@schema/uigf-2.2-schema.json" with { type: "json" };
+import uigf2Schema3 from "@schema/uigf-2.3-schema.json" with { type: "json" };
+import uigf2Schema4 from "@schema/uigf-2.4-schema.json" with { type: "json" };
+import uigf3Schema from "@schema/uigf-3.0-schema.json" with { type: "json" };
+import uigf4Schema from "@schema/uigf-4.0-schema.json" with { type: "json" };
 import Ajv, { type ErrorObject } from "ajv";
 
 export const enum JsonParseType {

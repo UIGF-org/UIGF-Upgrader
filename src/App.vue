@@ -32,9 +32,9 @@ import { ref, shallowRef, watch } from "vue";
 import { Message, RequestOption, UploadRequest } from "@arco-design/web-vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
-import aDownload from "./components/a-download.vue";
-import parseJson, { JsonParseType } from "./utils/parseJson.ts";
-import upgradeTool from "./utils/upgrade.ts";
+import aDownload from "@comp/a-download.vue";
+import parseJson, { JsonParseType } from "@utils/parseJson.ts";
+import upgradeTool from "@utils/upgrade.ts";
 
 const currTs = () => new Date().getTime();
 
