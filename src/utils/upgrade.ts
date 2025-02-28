@@ -13,7 +13,7 @@ import { Message } from "@arco-design/web-vue";
  */
 function getExportInfo(): UIGF4.Info {
   return {
-    export_app: "UigfUpgrader",
+    export_app: "UIGF Upgrader",
     export_app_version: "2.0.0",
     export_timestamp: Math.floor(Date.now() / 1000).toString(),
     version: "v4.0",
