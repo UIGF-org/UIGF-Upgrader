@@ -4,45 +4,42 @@
       <img src="/logo.png" alt="logo" />
       <span>UIGF Upgrader</span>
     </div>
-    <div class="app-actions">
-      <a-upload :show-file-list="false" :custom-request="uploadFile" accept=".json"></a-upload>
-      <a-download :data="newData" :filename="`UIGF-Upgrader-${currTs()}.json`">
-        <a-button id="downloadBtn" type="primary">下载</a-button>
-      </a-download>
+    <div class="app-result">
+      <a-upload draggable accept=".json" :custom-request="uploadFile" :show-file-list="false"/>
     </div>
-    <div class="uigf-body">
-      <div class="uigf-instance">
-        <div class="data-title">Old Data</div>
-          <textarea class="json-box" :value="JSON.stringify(oldJson)" v-if="oldJson" />
-          <textarea class="json-box" :value="oldData" v-else />
-      </div>
-      <div class="uigf-instance">
-        <div class="data-title">New Data</div>
-          <textarea class="json-box" :value="JSON.stringify(newData,null,2)" />
+    <div class="box-container">
+      <a-alert class="box-alert" v-if="resMsg.title!==''" :type="resMsg.type">
+        <template #title>{{resMsg.title}}</template>
+        <span style="white-space: pre-wrap;">{{resMsg.msg}}</span>
+        <template #action>
+          <div v-if="newData">
+            <a-download v-if="newData" :data="newData" :filename="`UIGF-Upgrader-${curTs}.json`">
+              <a-button id="downloadBtn" type="primary">Download</a-button>
+            </a-download>
+          </div>
+        </template>
+      </a-alert>
+      <textarea :value="validJson" v-if="validJson" />
+      <div class="info-container">
+        <div class="info-item" v-for="item in info" :key="item.key">
+          <span>{{ item.key }}</span>
+          <span>{{ item.value }}</span>
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, shallowRef, watch } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 import { Message, RequestOption, UploadRequest } from "@arco-design/web-vue";
-import "vue-json-pretty/lib/styles.css";
-import aDownload from "@comp/a-download.vue";
+import ADownload from "@comp/a-download.vue";
 import parseJson, { JsonParseType } from "@utils/parseJson.ts";
 import upgradeTool from "@utils/upgrade.ts";
 
-const currTs = () => new Date().getTime();
-
-const serverTimezoneOffset = ref<number>();
-const serverTimezoneOffsetModel = ref<string>("");
-const oldData = ref<string>("");
-const oldJson = shallowRef<Record<string, unknown>>();
-const newData = shallowRef<UIGF4.Schema>();
-const itemIdDict = shallowRef<Record<string, number>>();
-
-watch(serverTimezoneOffset, (val) => {
-  if (val) serverTimezoneOffsetModel.value = val.toString();
-});
+type ParseItem = { key:string, value:string}
+type ParseInfo = Array<ParseItem>;
+type AlertType = "normal" | "error" | "success" | "warning" | "info";
+type AlertMsg = { type:AlertType, msg:string; title:string };
 
 const langDict: Readonly<Record<string, string>> = {
   "zh-cn": "chs",
@@ -60,6 +57,21 @@ const langDict: Readonly<Record<string, string>> = {
   "vi-vn": "vi",
 };
 
+const oldData = ref<string>("");
+const validJson = ref<string>();
+const newData = shallowRef<UIGF4.Schema>();
+const resMsg = shallowRef<AlertMsg>({type:"normal", msg:"", title:""});
+const info = shallowRef<ParseInfo>([]);
+const itemIdDict = shallowRef<Record<string, number>>();
+const curTs = computed<number>(() => Date.now());
+
+watch(
+  ()=> oldData.value,
+  async ()=> {
+    if (oldData.value !== '') await loadData(oldData.value);
+  }
+);
+
 async function refreshItemIdDict(lang: string): Promise<void> {
   const dictUrl = `https://api.uigf.org/dict/genshin/${lang}.json`;
   try {
@@ -71,54 +83,103 @@ async function refreshItemIdDict(lang: string): Promise<void> {
   }
 }
 
-async function tryParseJson(data: string): Promise<void> {
+async function loadData(data:string):Promise<void> {
   const res = parseJson(data);
-  if (res.type === JsonParseType.Error) {
-    Message.error(res.data);
+  if(res.type === JsonParseType.Unknown) {
+    resMsg.value = {type:"warning", msg:res.data, title:"Parse Unknown"};
     return;
   }
-  oldJson.value = JSON.parse(data);
-  if (res.type === JsonParseType.Invalid) {
-    Message.error("无效的 JSON 文件");
+  if(res.type === JsonParseType.Error) {
+    resMsg.value = {type:"error", msg:res.data, title:"Parse Error"};
     return;
   }
-  if (res.type === JsonParseType.Unknown) {
-    Message.warning(res.data);
+  if(res.type === JsonParseType.Invalid){
+    const error = res.data[0];
+    const errJson = JSON.parse(data);
+    const path = error.instancePath.split("/");
+    let target = errJson;
+    for(let i = 1; i < path.length -1; i++) {
+      target = target[path[i]];
+    }
+    resMsg.value = {
+      type:"error",
+      msg: JSON.stringify(target, null, 2),
+      title:`Invalid JSON: ${res.data[0].instancePath} ${res.data[0].message}`,
+    }
     return;
   }
-  if (res.type === JsonParseType.Uigf4) {
-    Message.info("当前文件已是 UIGF4 格式");
+  if(res.type === JsonParseType.Uigf4) {
+    resMsg.value = {type:"info",title:"Parse UIGFv4.0",msg:"Don't need to upgrade"};
+    info.value = [
+      {key:"UIGFVersion", value: res.data.info.version},
+      {key: "ExportApp", value: res.data.info.export_app},
+      {key: "ExportAppVersion", value: res.data.info.export_app_version},
+      {key:"ExportTimeStamp", value: res.data.info.export_timestamp},
+    ]
     return;
   }
-  let updateRes: UIGF4.Schema;
-  if (res.type === JsonParseType.Uigf22) {
-    // todo 未指定语言时，让用户选择语言
+  if(res.type === JsonParseType.Srgf) {
+    resMsg.value = {type:"info",title:`Parse SRGFv${res.data.info.srgf_version}`,msg:"Upgrade to UIGF4"};
+    info.value = [
+      {key:"SRGFVersion", value: res.data.info.srgf_version},
+      {key:"UID", value: res.data.info.uid},
+      {key:"Lang", value: res.data.info.lang},
+      {key: "ExportApp", value: `${res.data.info.export_app}`},
+      {key: "ExportAppVersion", value: `${res.data.info.export_app_version}`},
+      {key:"ExportTimeStamp", value: `${res.data.info.export_timestamp}`},
+    ]
+    newData.value = upgradeTool.srgf(res.data);
+    return;
+  }
+  if(res.type === JsonParseType.Uigf3) {
+    resMsg.value = {type:"info",title:"Parse UIGFv3.0",msg:"Upgrade to UIGF4"};
+    info.value = [
+      {key:"UIGFVersion", value: res.data.info.uigf_version},
+      {key:"UID", value: res.data.info.uid},
+      {key: "ExportApp", value: `${res.data.info.export_app}`},
+      {key: "ExportAppVersion", value: `${res.data.info.export_app_version}`},
+      {key:"ExportTimeStamp", value: `${res.data.info.export_timestamp}`},
+    ]
+    newData.value = upgradeTool.uigf3(res.data);
+    return;
+  }
+  if(res.type === JsonParseType.Uigf24||res.type === JsonParseType.Uigf23) {
+    resMsg.value = {type:"info",title:`Parse UIGF${res.data.info.uigf_version}`,msg:"Upgrade to UIGF4"};
+    info.value = [
+      {key:"UIGFVersion", value: res.data.info.uigf_version},
+      {key:"UID", value: res.data.info.uid},
+      {key: "ExportApp", value: `${res.data.info.export_app}`},
+      {key: "ExportAppVersion", value: `${res.data.info.export_app_version}`},
+      {key:"ExportTimeStamp", value: `${res.data.info.export_timestamp}`},
+    ]
+    newData.value = upgradeTool.uigf2(res.data);
+    return;
+  }
+  if(res.type === JsonParseType.Uigf22) {
+    resMsg.value = {type:"info",title:"Parse UIGFv2.2",msg:"Upgrade to UIGF4"};
+    info.value = [
+      {key:"UIGFVersion", value: res.data.info.uigf_version},
+      {key:"UID", value: res.data.info.uid},
+      {key: "ExportApp", value: `${res.data.info.export_app}`},
+      {key: "ExportAppVersion", value: `${res.data.info.export_app_version}`},
+      {key:"ExportTimeStamp", value: `${res.data.info.export_timestamp}`},
+    ]
     const lang = langDict[res.data.info.lang ?? "zh-cn"];
     await refreshItemIdDict(lang);
     if (!itemIdDict.value) {
       Message.error("获取物品 ID 字典失败");
       return;
     }
-    updateRes = upgradeTool.uigf2o(res.data, itemIdDict.value);
+    newData.value = upgradeTool.uigf2o(res.data, itemIdDict.value);
+    return;
   }
-  switch (res.type) {
-    case JsonParseType.Srgf:
-      updateRes = upgradeTool.srgf(res.data);
-      break;
-    case JsonParseType.Uigf23:
-    case JsonParseType.Uigf24:
-      updateRes = upgradeTool.uigf2(res.data);
-      break;
-    case JsonParseType.Uigf3:
-      updateRes = upgradeTool.uigf3(res.data);
-      break;
-    default:
-      return;
-  }
-  newData.value = updateRes;
 }
 
 function uploadFile(option: RequestOption): UploadRequest {
+  info.value = [];
+  resMsg.value = {type:"normal", msg:"", title:""};
+  validJson.value = undefined;
+  newData.value = undefined;
   const file = option.fileItem.file;
   if (!file) {
     option.onError();
@@ -131,10 +192,7 @@ function uploadFile(option: RequestOption): UploadRequest {
   }
   const reader = new FileReader();
   try {
-    reader.onload = (e) => {
-      oldData.value = e.target?.result as string;
-      tryParseJson(oldData.value);
-    };
+    reader.onload = (e) => oldData.value = <string>e.target?.result;
     reader.readAsText(file);
     option.onSuccess();
   } catch (e) {
@@ -149,15 +207,17 @@ function uploadFile(option: RequestOption): UploadRequest {
   margin: 16px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
   gap: 16px;
+  width: calc(100% - 32px);
 }
 
 .app-title {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  margin-right: auto;
   column-gap: 8px;
   flex-wrap: wrap;
 
@@ -174,70 +234,51 @@ function uploadFile(option: RequestOption): UploadRequest {
   }
 }
 
-.app-actions {
+.app-result {
   display: flex;
+  flex-direction: column;
+  row-gap: 8px;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
+  justify-content: center;
+  width: 100%;
 }
 
-.uigf-body {
+.box-container {
   position: relative;
   display: flex;
-  width: 100%;
-  justify-content: space-between;
-  gap: 12px;
-  box-sizing: border-box;
-}
-
-@media (max-width: 768px) {
-  .uigf-body {
-    flex-direction: column;
-  }
-
-  .uigf-body > .uigf-instance {
-    width: 100%;
-  }
-}
-
-.uigf-instance {
-  width: 100%;
-  display: flex;
-  height: calc(100vh - 160px);
   flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 
-.parsed-data-container {
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.parsed-data {
+.info-container {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  gap: 4px;
 }
 
-.data-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 10px;
+.info-item {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  column-gap: 10px;
+  justify-content: space-between;
+  column-gap: 16px;
+
+  span {
+    &:first-child {
+      font-weight: bold;
+    }
+
+    &:last-child {
+      flex: 1;
+      text-align: right;
+    }
+  }
 }
 
-.json-box {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow-y: auto;
-  box-sizing: border-box;
+@media (min-width: 768px) {
+  .app-container {
+    width: 600px;
+    height: calc(100vh - 32px);
+    margin:16px auto;
+  }
 }
 </style>

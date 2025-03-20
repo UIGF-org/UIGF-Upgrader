@@ -24,7 +24,7 @@ export const enum JsonParseType {
   Invalid,
 }
 
-type JsonParseRes =
+export type JsonParseRes =
   | { type: JsonParseType.Srgf; data: SRGF1.Schema }
   | { type: JsonParseType.Uigf22; data: UIGF2.Schema2 }
   | { type: JsonParseType.Uigf23; data: UIGF2.Schema3 }
