@@ -13,16 +13,12 @@
     <div class="uigf-body">
       <div class="uigf-instance">
         <div class="data-title">Old Data</div>
-        <div class="json-box">
-          <vue-json-pretty :data="oldJson" v-if="oldJson" />
-          <vue-json-pretty :data="oldData" v-else />
-        </div>
+          <textarea class="json-box" :value="JSON.stringify(oldJson)" v-if="oldJson" />
+          <textarea class="json-box" :value="oldData" v-else />
       </div>
       <div class="uigf-instance">
         <div class="data-title">New Data</div>
-        <div class="json-box">
-          <vue-json-pretty :data="newData" />
-        </div>
+          <textarea class="json-box" :value="JSON.stringify(newData,null,2)" />
       </div>
     </div>
   </div>
@@ -30,7 +26,6 @@
 <script setup lang="ts">
 import { ref, shallowRef, watch } from "vue";
 import { Message, RequestOption, UploadRequest } from "@arco-design/web-vue";
-import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
 import aDownload from "@comp/a-download.vue";
 import parseJson, { JsonParseType } from "@utils/parseJson.ts";
@@ -151,38 +146,39 @@ function uploadFile(option: RequestOption): UploadRequest {
 <style lang="scss" scoped>
 .app-container {
   position: relative;
-  margin: 20px;
+  margin: 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .app-title {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  column-gap: 10px;
+  column-gap: 8px;
   flex-wrap: wrap;
-}
 
-.app-title img {
-  width: 40px;
-  height: 40px;
-}
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+  }
 
-.app-title span {
-  font-size: 20px;
-  font-weight: bold;
+  span {
+    font-size: 20px;
+    font-weight: bold;
+  }
 }
 
 .app-actions {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  width: 100%;
-  gap: 10px;
+  gap: 8px;
 }
 
 .uigf-body {
@@ -190,7 +186,7 @@ function uploadFile(option: RequestOption): UploadRequest {
   display: flex;
   width: 100%;
   justify-content: space-between;
-  column-gap: 12px;
+  gap: 12px;
   box-sizing: border-box;
 }
 
@@ -205,7 +201,7 @@ function uploadFile(option: RequestOption): UploadRequest {
 }
 
 .uigf-instance {
-  width: 49%;
+  width: 100%;
   display: flex;
   height: calc(100vh - 160px);
   flex-direction: column;
