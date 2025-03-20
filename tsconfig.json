@@ -24,7 +24,7 @@
     "paths": {
       "@schema/*": ["public/schema/*"],
       "@utils/*": ["src/utils/*"],
-      "@comp/*": ["src/components/*"],
+      "@comp/*": ["src/components/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "types/**/*.d.ts"],
