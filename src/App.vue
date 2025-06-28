@@ -193,6 +193,10 @@ function upgradeUIGFItems(oldItems: any[]) {
       id: item.id,
     }
 
+    if (!newItem.uigf_gacha_type || newItem.uigf_gacha_type === "0") {
+      newItem.uigf_gacha_type = (newItem.gacha_type === "400") ? "301" : newItem.gacha_type;
+    }
+
     if (item.item_id) {
       // @ts-ignore
       newItem.item_id = item.item_id;
