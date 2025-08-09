@@ -1,28 +1,28 @@
 {
   "name": "uigf-upgrader",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
-  "packageManager": "pnpm@10.6.5",
+  "packageManager": "pnpm@10.14.0",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "fmt:json": "prettier --write src/**/*.json",
+    "fmt:json": "prettier --write **/*.json",
     "fmt": "prettier . --write"
   },
   "dependencies": {
     "ajv": "^8.17.1",
-    "sass": "^1.86.0",
+    "sass": "^1.90.0",
     "sass-loader": "^16.0.5",
-    "vue": "^3.5.13"
+    "vue": "^3.5.18"
   },
   "devDependencies": {
     "@arco-design/web-vue": "^2.57.0",
-    "@vitejs/plugin-vue": "^5.2.3",
-    "prettier": "^3.5.3",
-    "rolldown-vite": "^6.3.18",
-    "typescript": "^5.8.2",
-    "vue-tsc": "^2.2.8"
+    "@typescript/native-preview": "7.0.0-dev.20250808.1",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "prettier": "^3.6.2",
+    "rolldown-vite": "^7.1.0",
+    "typescript": "^5.9.2",
+    "vue-tsc": "^3.0.5"
   }
 }
