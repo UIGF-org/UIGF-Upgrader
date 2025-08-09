@@ -152,7 +152,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
       { key: "导出应用版本", value: res.data.info.export_app_version },
-      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid || "900000000")},
+      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp)},
     ];
     return;
   }
@@ -162,7 +162,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
       { key: "导出应用版本", value: res.data.info.export_app_version },
-      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid || "900000000")},
+      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp)},
     ];
     return;
   }
@@ -201,15 +201,13 @@ async function loadData(data: string): Promise<void> {
       title: t("检测到 UIGFvx", [res.data.info.uigf_version]),
       msg: t("升级为 UIGFv4.1"),
     };
+    const regionTimeZone = "region_time_zone" in res.data.info ? res.data.info.region_time_zone : undefined;
     info.value = [
       { key: "UIGF版本", value: res.data.info.uigf_version },
       { key: "UID", value: res.data.info.uid },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      {
-        key: "导出时间",
-        value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid, res.data.info.region_time_zone)
-      },
+      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid, regionTimeZone)},
     ];
     newData.value = upgradeTool.uigf2(res.data);
     return;

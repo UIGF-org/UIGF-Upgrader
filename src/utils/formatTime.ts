@@ -7,11 +7,15 @@
 /**
  * 根据UID和region_time_zone格式化时间戳
  * @param timestamp 时间戳（秒或毫秒）
- * @param uid 用户ID
+ * @param uid 用户ID（可选）
  * @param regionTimeZone 区域时区偏移（可选）
  * @returns 格式化后的日期时间字符串
  */
-export function formatTimestamp(timestamp: number | string, uid: string, regionTimeZone?: number): string {
+export function formatTimestamp(timestamp: number | string | undefined, uid?: string, regionTimeZone?: number): string {
+    if (timestamp === undefined || timestamp === null) {
+        return '无效时间戳';
+    }
+
     let ts = typeof timestamp === 'string' ? parseInt(timestamp) : timestamp;
 
     if (ts >= 10000000000) {
@@ -20,10 +24,11 @@ export function formatTimestamp(timestamp: number | string, uid: string, regionT
     }
 
     let timezoneOffset: number;
+    let useLocalTime = false;
 
     if (regionTimeZone !== undefined) {
         timezoneOffset = regionTimeZone;
-    } else {
+    } else if (uid) {
         const uidStr = uid.toString();
         let serverDigit: string;
 
@@ -35,6 +40,7 @@ export function formatTimestamp(timestamp: number | string, uid: string, regionT
             serverDigit = '1';
         }
 
+        // 根据服务器数字确定时区
         switch (serverDigit) {
             case '6':
                 timezoneOffset = -5; // 美服
@@ -45,12 +51,27 @@ export function formatTimestamp(timestamp: number | string, uid: string, regionT
             default:
                 timezoneOffset = 8;
                 break;
-        }
+    }
+    } else {
+        useLocalTime = true;
+        timezoneOffset = 0;
     }
 
+    let targetTime: Date;
+    let timezoneStr: string;
+
+    if (useLocalTime) {
+        targetTime = new Date(ts * 1000);
+        const localOffset = -targetTime.getTimezoneOffset() / 60;
+        timezoneStr = localOffset >= 0 ? `+${localOffset}` : `${localOffset}`;
+        timezoneStr = `本地时区(UTC${timezoneStr})`;
+    } else {
     const date = new Date(ts * 1000);
     const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
-    const targetTime = new Date(utcTime + (timezoneOffset * 3600000));
+        targetTime = new Date(utcTime + (timezoneOffset * 3600000));
+        timezoneStr = timezoneOffset >= 0 ? `+${timezoneOffset}` : `${timezoneOffset}`;
+        timezoneStr = `UTC${timezoneStr}`;
+    }
 
     const year = targetTime.getFullYear();
     const month = String(targetTime.getMonth() + 1).padStart(2, '0');
@@ -59,7 +80,5 @@ export function formatTimestamp(timestamp: number | string, uid: string, regionT
     const minutes = String(targetTime.getMinutes()).padStart(2, '0');
     const seconds = String(targetTime.getSeconds()).padStart(2, '0');
 
-    const timezoneStr = timezoneOffset >= 0 ? `+${timezoneOffset}` : `${timezoneOffset}`;
-
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} (UTC${timezoneStr})`;
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} (${timezoneStr})`;
 }
