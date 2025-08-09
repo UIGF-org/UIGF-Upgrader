@@ -10,6 +10,7 @@ import uigf2Schema3 from "@schema/uigf-2.3-schema.json" with { type: "json" };
 import uigf2Schema4 from "@schema/uigf-2.4-schema.json" with { type: "json" };
 import uigf3Schema from "@schema/uigf-3.0-schema.json" with { type: "json" };
 import uigf4Schema from "@schema/uigf-4.0-schema.json" with { type: "json" };
+import uigf41Schema from "@schema/uigf-4.1-schema.json" with { type: "json" };
 import Ajv, { type ErrorObject } from "ajv";
 
 export const enum JsonParseType {
@@ -19,6 +20,7 @@ export const enum JsonParseType {
   Uigf24,
   Uigf3,
   Uigf4,
+  Uigf41,
   Unknown,
   Error,
   Invalid,
@@ -31,6 +33,7 @@ export type JsonParseRes =
   | { type: JsonParseType.Uigf24; data: UIGF2.Schema4 }
   | { type: JsonParseType.Uigf3; data: UIGF3.Schema }
   | { type: JsonParseType.Uigf4; data: UIGF4.Schema }
+  | { type: JsonParseType.Uigf41; data: UIGF4.Schema1 }
   | { type: JsonParseType.Unknown; data: string }
   | { type: JsonParseType.Error; data: string }
   | { type: JsonParseType.Invalid; data: Array<ErrorObject> };
@@ -68,6 +71,9 @@ function parseJson(jsonStr: string): JsonParseRes {
       if (json.info.version === "v4.0") {
         return validateJson(jsonStr, JsonParseType.Uigf4);
       }
+      if (json.info.version === "v4.1") {
+        return validateJson(jsonStr, JsonParseType.Uigf41);
+      }
     }
     return { type: JsonParseType.Unknown, data: "Unknown schema" };
   } catch (error) {
@@ -97,6 +103,8 @@ function validateJson(jsonStr: string, type: JsonParseType): JsonParseRes {
         return uigf3Schema;
       case JsonParseType.Uigf4:
         return uigf4Schema;
+      case JsonParseType.Uigf41:
+        return uigf41Schema;
       default:
         throw new Error("Unknown schema");
     }

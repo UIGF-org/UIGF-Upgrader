@@ -24,6 +24,13 @@ declare namespace UIGF4 {
   };
 
   /**
+   * @description UIGF4.1数据结构
+   * @since 2.0.0
+   * @interface Schema1
+   */
+  type Schema1 = Schema;
+
+  /**
    * @description UIGF4数据-仅原神
    * @since 2.0.0
    * @interface SchemaHk4e
