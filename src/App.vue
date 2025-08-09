@@ -21,7 +21,13 @@
         </div>
       </div>
       <div class="app-result">
-        <a-upload draggable accept=".json" :custom-request="uploadFile" :show-file-list="false" />
+        <a-upload
+          draggable
+          @change="changeFile"
+          accept=".json"
+          :custom-request="uploadFile"
+          :multiple="false"
+        />
       </div>
       <div class="box-container">
         <a-alert class="box-alert" v-if="resMsg.title !== ''" :type="resMsg.type">
@@ -47,16 +53,16 @@
   </div>
 </template>
 <script setup lang="ts">
-import {computed, ref, shallowRef, watch} from "vue";
-import {Message, RequestOption, UploadRequest} from "@arco-design/web-vue";
+import { computed, ref, shallowRef, watch } from "vue";
+import { Message, RequestOption, UploadRequest } from "@arco-design/web-vue";
 import enUS from "@arco-design/web-vue/es/locale/lang/en-us";
 import zhCN from "@arco-design/web-vue/es/locale/lang/zh-cn";
 import ADownload from "@comp/a-download.vue";
-import parseJson, {JsonParseType} from "@utils/parseJson.ts";
+import parseJson, { JsonParseType } from "@utils/parseJson.ts";
 import upgradeTool from "@utils/upgrade.ts";
-import {useI18n} from "vue-i18n";
-import {type ArcoLang} from "@arco-design/web-vue/es/locale/interface";
-import {formatTimestamp} from "@utils/formatTime.ts";
+import { useI18n } from "vue-i18n";
+import { type ArcoLang } from "@arco-design/web-vue/es/locale/interface";
+import { formatTimestamp } from "@utils/formatTime.ts";
 
 type ParseItem = { key: string; value: string };
 type ParseInfo = Array<ParseItem>;
@@ -80,7 +86,7 @@ const langDict: Readonly<Record<string, string>> = {
 };
 
 const { t, locale } = useI18n();
-const oldData = ref<string>("");
+const oldData = shallowRef<string>("");
 const validJson = ref<string>();
 const newData = shallowRef<UIGF4.Schema>();
 const resMsg = shallowRef<AlertMsg>({ type: "normal", msg: "", title: "" });
@@ -152,7 +158,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
       { key: "导出应用版本", value: res.data.info.export_app_version },
-      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp)},
+      { key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp) },
     ];
     return;
   }
@@ -162,7 +168,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
       { key: "导出应用版本", value: res.data.info.export_app_version },
-      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp)},
+      { key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp) },
     ];
     return;
   }
@@ -178,7 +184,7 @@ async function loadData(data: string): Promise<void> {
       { key: "语言", value: res.data.info.lang },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid)},
+      { key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid) },
     ];
     newData.value = upgradeTool.srgf(res.data);
     return;
@@ -190,7 +196,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UID", value: res.data.info.uid },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid)},
+      { key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid) },
     ];
     newData.value = upgradeTool.uigf3(res.data);
     return;
@@ -207,7 +213,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UID", value: res.data.info.uid },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid, regionTimeZone)},
+      { key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid, regionTimeZone) },
     ];
     newData.value = upgradeTool.uigf2(res.data);
     return;
@@ -219,7 +225,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UID", value: res.data.info.uid },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid)},
+      { key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid) },
     ];
     const lang = langDict[res.data.info.lang ?? "zh-cn"];
     await refreshItemIdDict(lang);
@@ -228,6 +234,17 @@ async function loadData(data: string): Promise<void> {
       return;
     }
     newData.value = upgradeTool.uigf2o(res.data, itemIdDict.value);
+    return;
+  }
+}
+
+function changeFile(e: Array<unknown>): void {
+  if (e.length === 0) {
+    resMsg.value = { type: "normal", msg: "", title: "" };
+    validJson.value = undefined;
+    newData.value = undefined;
+    oldData.value = "";
+    info.value = [];
     return;
   }
 }
