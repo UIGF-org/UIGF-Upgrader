@@ -6,17 +6,19 @@
           <img src="/logo.png" alt="logo" />
           <span>UIGF Upgrader</span>
         </div>
-        <a-dropdown class="app-title__right" @select="switchLang">
-          <a-button>
-            <template #icon>
-              <icon-language />
+        <div class="app-title__right">
+          <a-dropdown @select="switchLang">
+            <a-button>
+              <template #icon>
+                <icon-language />
+              </template>
+            </a-button>
+            <template #content>
+              <a-doption value="en">English</a-doption>
+              <a-doption value="chs">简体中文</a-doption>
             </template>
-          </a-button>
-          <template #content>
-            <a-doption value="en">English</a-doption>
-            <a-doption value="chs">简体中文</a-doption>
-          </template>
-        </a-dropdown>
+          </a-dropdown>
+        </div>
       </div>
       <div class="app-result">
         <a-upload draggable accept=".json" :custom-request="uploadFile" :show-file-list="false" />
@@ -272,7 +274,7 @@ function uploadFile(option: RequestOption): UploadRequest {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  column-gap: 8px;
+  gap: 8px;
   flex-wrap: wrap;
 
   &__left {
@@ -291,6 +293,12 @@ function uploadFile(option: RequestOption): UploadRequest {
       font-size: 20px;
       font-weight: bold;
     }
+  }
+
+  &__right {
+    position: relative;
+    width: fit-content;
+    margin-left: auto;
   }
 }
 
