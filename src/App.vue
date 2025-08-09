@@ -144,7 +144,7 @@ async function loadData(data: string): Promise<void> {
     return;
   }
   if (res.type === JsonParseType.Uigf41) {
-    resMsg.value = { type: "info", title: "Parse UIGFv4.1", msg: t("无需升级") };
+    resMsg.value = { type: "info", title: t("检测到 UIGFvx", ["4.1"]), msg: t("无需升级") };
     info.value = [
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
@@ -154,7 +154,7 @@ async function loadData(data: string): Promise<void> {
     return;
   }
   if (res.type === JsonParseType.Uigf4) {
-    resMsg.value = { type: "info", title: "Parse UIGFv4.0", msg: t("无需升级") };
+    resMsg.value = { type: "info", title: t("检测到 UIGFvx", ["4.0"]), msg: t("无需升级") };
     info.value = [
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
@@ -166,7 +166,7 @@ async function loadData(data: string): Promise<void> {
   if (res.type === JsonParseType.Srgf) {
     resMsg.value = {
       type: "info",
-      title: `Parse SRGFv${res.data.info.srgf_version}`,
+      title: t("检测到 SRGFvx", [res.data.info.srgf_version]),
       msg: t("升级为 UIGFv4.1"),
     };
     info.value = [
@@ -181,7 +181,7 @@ async function loadData(data: string): Promise<void> {
     return;
   }
   if (res.type === JsonParseType.Uigf3) {
-    resMsg.value = { type: "info", title: "Parse UIGFv3.0", msg: t("升级为 UIGFv4.1") };
+    resMsg.value = { type: "info", title: t("检测到 UIGFvx", ["3.0"]), msg: t("升级为 UIGFv4.1") };
     info.value = [
       { key: "UIGF版本", value: res.data.info.uigf_version },
       { key: "UID", value: res.data.info.uid },
@@ -195,7 +195,7 @@ async function loadData(data: string): Promise<void> {
   if (res.type === JsonParseType.Uigf24 || res.type === JsonParseType.Uigf23) {
     resMsg.value = {
       type: "info",
-      title: `Parse UIGFv${res.data.info.uigf_version}`,
+      title: t("检测到 UIGFvx", [res.data.info.uigf_version]),
       msg: t("升级为 UIGFv4.1"),
     };
     info.value = [
@@ -209,7 +209,7 @@ async function loadData(data: string): Promise<void> {
     return;
   }
   if (res.type === JsonParseType.Uigf22) {
-    resMsg.value = { type: "info", title: "Parse UIGFv2.2", msg: t("升级为 UIGFv4.1") };
+    resMsg.value = { type: "info", title: t("检测到 UIGFvx", ["2.2"]), msg: t("升级为 UIGFv4.1") };
     info.value = [
       { key: "UIGF版本", value: res.data.info.uigf_version },
       { key: "UID", value: res.data.info.uid },
