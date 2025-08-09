@@ -23,7 +23,7 @@
       </div>
       <div class="box-container">
         <a-alert class="box-alert" v-if="resMsg.title !== ''" :type="resMsg.type">
-          <template #title>{{ t(resMsg.title) }}</template>
+          <template #title>{{ resMsg.title }}</template>
           <span style="white-space: pre-wrap">{{ resMsg.msg }}</span>
           <template #action>
             <div v-if="newData">
