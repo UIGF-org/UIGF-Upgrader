@@ -36,7 +36,7 @@
           </template>
         </a-alert>
         <textarea :value="validJson" v-if="validJson" />
-        <div class="info-container">
+        <div v-if="info.length !== 0" class="info-container">
           <div class="info-item" v-for="item in info" :key="item.key">
             <span>{{ t(item.key) }}</span>
             <span>{{ item.value }}</span>
