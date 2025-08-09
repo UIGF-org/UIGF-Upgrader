@@ -3,23 +3,12 @@
     <slot></slot>
   </a>
 </template>
+<script lang="ts" setup>
+import { computed } from "vue";
 
-<script>
-export default {
-  props: {
-    data: {
-      type: String,
-      required: true
-    },
-    filename: {
-      type: String,
-      required: true
-    }
-  },
-  computed: {
-    downloadUrl() {
-      return 'data:text/json;charset=utf-8,' + encodeURIComponent(this.data);
-    }
-  }
-};
+type DownloadProps = { data?: UIGF4.Schema; filename: string };
+const props = defineProps<DownloadProps>();
+const downloadUrl = computed<string>(
+  () => `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(props.data ?? {}))}`,
+);
 </script>

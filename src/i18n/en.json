@@ -1,0 +1,20 @@
+{
+  "下载": "Download",
+  "获取物品 ID 字典失败: x": "Get item ID dictionary failed: {0}",
+  "未知错误": "Parse Unknown",
+  "解析异常": "Parse Error",
+  "校验异常：x": "Invalid JSON: {0}",
+  "检测到 UIGFvx": "Detected UIGF {0}",
+  "无需升级": "No need to upgrade",
+  "UIGF版本": "UIGF Version",
+  "导出应用": "Export Application",
+  "导出应用版本": "Export Application Version",
+  "导出时间": "Export Time",
+  "检测到 SRGFvx": "Detected SRGF {0}",
+  "升级为 UIGFv4.1": "Upgrade to UIGF v4.1",
+  "SRGF版本": "SRGF Version",
+  "UID": "UID",
+  "语言": "Lang",
+  "无效时间戳": "Invalid timestamp",
+  "本地时区": "Local timezone"
+}

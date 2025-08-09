@@ -29,12 +29,7 @@
           "description": "The UIGF version of the exported archive, formatted as 'v{major}.{minor}', e.g., v4.0"
         }
       },
-      "required": [
-        "export_timestamp",
-        "export_app",
-        "export_app_version",
-        "version"
-      ]
+      "required": ["export_timestamp", "export_app", "export_app_version", "version"]
     },
     "hk4e": {
       "type": "array",
@@ -102,7 +97,8 @@
                 },
                 "time": {
                   "type": "string",
-                  "description": "The local time in the timezone of the item being drawn"
+                  "description": "The local time in the timezone of the item being drawn.This MUST BE THE String typed value captured intact from the gacha record webpage WITHOUT ANY CONVERTION TO ANY DATE TYPES. Any conversion of such can cause potential timezone mistakes if the device time zone differs from the server time zone, unless special treatments are applied by individual app devs.",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
                 },
                 "name": {
                   "type": "string",
@@ -124,13 +120,7 @@
                   "pattern": "^[0-9]+$"
                 }
               },
-              "required": [
-                "uigf_gacha_type",
-                "gacha_type",
-                "item_id",
-                "time",
-                "id"
-              ]
+              "required": ["uigf_gacha_type", "gacha_type", "item_id", "time", "id"]
             }
           }
         },
@@ -190,7 +180,7 @@
                 "gacha_type": {
                   "type": "string",
                   "description": "Gacha type",
-                  "enum": ["1", "2", "11", "12"]
+                  "enum": ["1", "2", "11", "12", "21", "22"]
                 },
                 "item_id": {
                   "type": "string",
@@ -202,7 +192,8 @@
                 },
                 "time": {
                   "type": "string",
-                  "description": "The local time in the timezone of the item being drawn"
+                  "description": "The local time in the timezone of the item being drawn.This MUST BE THE String typed value captured intact from the gacha record webpage WITHOUT ANY CONVERTION TO ANY DATE TYPES. Any conversion of such can cause potential timezone mistakes if the device time zone differs from the server time zone, unless special treatments are applied by individual app devs.",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
                 },
                 "name": {
                   "type": "string",
@@ -296,7 +287,8 @@
                 },
                 "time": {
                   "type": "string",
-                  "description": "The local time in the timezone of the item being drawn"
+                  "description": "The local time in the timezone of the item being drawn.This MUST BE THE String typed value captured intact from the gacha record webpage WITHOUT ANY CONVERTION TO ANY DATE TYPES. Any conversion of such can cause potential timezone mistakes if the device time zone differs from the server time zone, unless special treatments are applied by individual app devs.",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$"
                 },
                 "name": {
                   "type": "string",
