@@ -4,6 +4,8 @@
  * @since 2.0.0
  */
 
+import i18n from '../i18n';
+
 /**
  * 根据UID和region_time_zone格式化时间戳
  * @param timestamp 时间戳（秒或毫秒）
@@ -13,7 +15,7 @@
  */
 export function formatTimestamp(timestamp: number | string | undefined, uid?: string, regionTimeZone?: number): string {
     if (timestamp === undefined || timestamp === null) {
-        return '无效时间戳';
+        return i18n.global.t('无效时间戳');
     }
 
     let ts = typeof timestamp === 'string' ? parseInt(timestamp) : timestamp;
@@ -40,7 +42,6 @@ export function formatTimestamp(timestamp: number | string | undefined, uid?: st
             serverDigit = '1';
         }
 
-        // 根据服务器数字确定时区
         switch (serverDigit) {
             case '6':
                 timezoneOffset = -5; // 美服
@@ -64,7 +65,7 @@ export function formatTimestamp(timestamp: number | string | undefined, uid?: st
         targetTime = new Date(ts * 1000);
         const localOffset = -targetTime.getTimezoneOffset() / 60;
         timezoneStr = localOffset >= 0 ? `+${localOffset}` : `${localOffset}`;
-        timezoneStr = `本地时区(UTC${timezoneStr})`;
+        timezoneStr = `${i18n.global.t('本地时区')}(UTC${timezoneStr})`;
     } else {
     const date = new Date(ts * 1000);
     const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
