@@ -47,15 +47,16 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from "vue";
-import { Message, RequestOption, UploadRequest } from "@arco-design/web-vue";
+import {computed, ref, shallowRef, watch} from "vue";
+import {Message, RequestOption, UploadRequest} from "@arco-design/web-vue";
 import enUS from "@arco-design/web-vue/es/locale/lang/en-us";
 import zhCN from "@arco-design/web-vue/es/locale/lang/zh-cn";
 import ADownload from "@comp/a-download.vue";
-import parseJson, { JsonParseType } from "@utils/parseJson.ts";
+import parseJson, {JsonParseType} from "@utils/parseJson.ts";
 import upgradeTool from "@utils/upgrade.ts";
-import { useI18n } from "vue-i18n";
-import { type ArcoLang } from "@arco-design/web-vue/es/locale/interface";
+import {useI18n} from "vue-i18n";
+import {type ArcoLang} from "@arco-design/web-vue/es/locale/interface";
+import {formatTimestamp} from "@utils/formatTime.ts";
 
 type ParseItem = { key: string; value: string };
 type ParseInfo = Array<ParseItem>;
@@ -151,7 +152,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
       { key: "导出应用版本", value: res.data.info.export_app_version },
-      { key: "导出时间戳(秒)", value: res.data.info.export_timestamp },
+      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid || "900000000")},
     ];
     return;
   }
@@ -161,7 +162,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
       { key: "导出应用版本", value: res.data.info.export_app_version },
-      { key: "导出时间戳(秒)", value: res.data.info.export_timestamp },
+      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid || "900000000")},
     ];
     return;
   }
@@ -177,7 +178,7 @@ async function loadData(data: string): Promise<void> {
       { key: "语言", value: res.data.info.lang },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      { key: "导出时间戳(秒)", value: `${res.data.info.export_timestamp}` },
+      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid)},
     ];
     newData.value = upgradeTool.srgf(res.data);
     return;
@@ -189,7 +190,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UID", value: res.data.info.uid },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      { key: "导出时间戳(秒)", value: `${res.data.info.export_timestamp}` },
+      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid)},
     ];
     newData.value = upgradeTool.uigf3(res.data);
     return;
@@ -205,7 +206,10 @@ async function loadData(data: string): Promise<void> {
       { key: "UID", value: res.data.info.uid },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      { key: "导出时间戳(秒)", value: `${res.data.info.export_timestamp}` },
+      {
+        key: "导出时间",
+        value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid, res.data.info.region_time_zone)
+      },
     ];
     newData.value = upgradeTool.uigf2(res.data);
     return;
@@ -217,7 +221,7 @@ async function loadData(data: string): Promise<void> {
       { key: "UID", value: res.data.info.uid },
       { key: "导出应用", value: `${res.data.info.export_app}` },
       { key: "导出应用版本", value: `${res.data.info.export_app_version}` },
-      { key: "导出时间戳(秒)", value: `${res.data.info.export_timestamp}` },
+      {key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp, res.data.info.uid)},
     ];
     const lang = langDict[res.data.info.lang ?? "zh-cn"];
     await refreshItemIdDict(lang);
@@ -322,13 +326,25 @@ function uploadFile(option: RequestOption): UploadRequest {
 .info-container {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
   column-gap: 16px;
+  padding: 8px 12px;
+  border: none;
+
+  &:nth-child(even) {
+    background-color: #f5f5f5;
+  }
+
+  &:nth-child(odd) {
+    background-color: #ffffff;
+  }
 
   span {
     &:first-child {
