@@ -30,9 +30,9 @@
         />
       </div>
       <div class="box-container">
-        <a-alert class="box-alert" v-if="resMsg.title !== ''" :type="resMsg.type">
-          <template #title>{{ resMsg.title }}</template>
-          <span style="white-space: pre-wrap">{{ resMsg.msg }}</span>
+        <a-alert class="box-alert" v-if="msgTitle !== ''" :type="resMsg.type">
+          <template #title>{{ msgTitle }}</template>
+          <span style="white-space: pre-wrap">{{ msgMsg }}</span>
           <template #action>
             <div v-if="newData">
               <a-download v-if="newData" :data="newData" :filename="`UIGF-Upgrader-${curTs}.json`">
@@ -55,8 +55,8 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from "vue";
 import { Message, RequestOption, UploadRequest } from "@arco-design/web-vue";
-import enUS from "@arco-design/web-vue/es/locale/lang/en-us";
-import zhCN from "@arco-design/web-vue/es/locale/lang/zh-cn";
+import enUS from "@arco-design/web-vue/es/locale/lang/en-us.js";
+import zhCN from "@arco-design/web-vue/es/locale/lang/zh-cn.js";
 import ADownload from "@comp/a-download.vue";
 import parseJson, { JsonParseType } from "@utils/parseJson.ts";
 import upgradeTool from "@utils/upgrade.ts";
@@ -67,7 +67,7 @@ import { formatTimestamp } from "@utils/formatTime.ts";
 type ParseItem = { key: string; value: string };
 type ParseInfo = Array<ParseItem>;
 type AlertType = "normal" | "error" | "success" | "warning" | "info";
-type AlertMsg = { type: AlertType; msg: string; title: string };
+type AlertMsg = { type: AlertType; msg: string | (() => string); title: string | (() => string) };
 
 const langDict: Readonly<Record<string, string>> = {
   "zh-cn": "chs",
@@ -89,11 +89,19 @@ const { t, locale } = useI18n();
 const oldData = shallowRef<string>("");
 const validJson = ref<string>();
 const newData = shallowRef<UIGF4.Schema>();
-const resMsg = shallowRef<AlertMsg>({ type: "normal", msg: "", title: "" });
+const resMsg = shallowRef<AlertMsg>({ type: "normal", msg: "", title: () => "" });
 const info = shallowRef<ParseInfo>([]);
 const itemIdDict = shallowRef<Record<string, number>>();
 const compLocale = shallowRef<ArcoLang>(getCompLang());
 const curTs = computed<number>(() => Date.now());
+const msgTitle = computed<string>(() => {
+  if (typeof resMsg.value.title === "function") return resMsg.value.title();
+  return resMsg.value.title;
+});
+const msgMsg = computed<string>(() => {
+  if (typeof resMsg.value.msg === "function") return resMsg.value.msg();
+  return resMsg.value.msg;
+});
 
 watch(
   () => oldData.value,
@@ -130,11 +138,11 @@ async function refreshItemIdDict(lang: string): Promise<void> {
 async function loadData(data: string): Promise<void> {
   const res = parseJson(data);
   if (res.type === JsonParseType.Unknown) {
-    resMsg.value = { type: "warning", msg: res.data, title: t("未知错误") };
+    resMsg.value = { type: "warning", msg: res.data, title: () => t("未知错误") };
     return;
   }
   if (res.type === JsonParseType.Error) {
-    resMsg.value = { type: "error", msg: res.data, title: t("解析异常") };
+    resMsg.value = { type: "error", msg: res.data, title: () => t("解析异常") };
     return;
   }
   if (res.type === JsonParseType.Invalid) {
@@ -148,12 +156,12 @@ async function loadData(data: string): Promise<void> {
     resMsg.value = {
       type: "error",
       msg: JSON.stringify(target, null, 2),
-      title: t("校验异常：x", [`${res.data[0].instancePath} ${res.data[0].message}`]),
+      title: () => t("校验异常：x", [`${res.data[0].instancePath} ${res.data[0].message}`]),
     };
     return;
   }
   if (res.type === JsonParseType.Uigf41) {
-    resMsg.value = { type: "info", title: t("检测到 UIGFvx", ["4.1"]), msg: t("无需升级") };
+    resMsg.value = { type: "info", title: () => t("检测到 UIGFvx", ["4.1"]), msg: () => t("无需升级") };
     info.value = [
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
@@ -163,7 +171,7 @@ async function loadData(data: string): Promise<void> {
     return;
   }
   if (res.type === JsonParseType.Uigf4) {
-    resMsg.value = { type: "info", title: t("检测到 UIGFvx", ["4.0"]), msg: t("无需升级") };
+    resMsg.value = { type: "info", title: () => t("检测到 UIGFvx", ["4.0"]), msg: () => t("无需升级") };
     info.value = [
       { key: "UIGF版本", value: res.data.info.version },
       { key: "导出应用", value: res.data.info.export_app },
@@ -175,8 +183,8 @@ async function loadData(data: string): Promise<void> {
   if (res.type === JsonParseType.Srgf) {
     resMsg.value = {
       type: "info",
-      title: t("检测到 SRGFvx", [res.data.info.srgf_version]),
-      msg: t("升级为 UIGFv4.1"),
+      title: () => t("检测到 SRGFvx", [res.data.info.srgf_version]),
+      msg: () => t("升级为 UIGFv4.1"),
     };
     info.value = [
       { key: "SRGF版本", value: res.data.info.srgf_version },
@@ -190,7 +198,7 @@ async function loadData(data: string): Promise<void> {
     return;
   }
   if (res.type === JsonParseType.Uigf3) {
-    resMsg.value = { type: "info", title: t("检测到 UIGFvx", ["3.0"]), msg: t("升级为 UIGFv4.1") };
+    resMsg.value = { type: "info", title: () => t("检测到 UIGFvx", ["3.0"]), msg: () => t("升级为 UIGFv4.1") };
     info.value = [
       { key: "UIGF版本", value: res.data.info.uigf_version },
       { key: "UID", value: res.data.info.uid },
@@ -204,8 +212,8 @@ async function loadData(data: string): Promise<void> {
   if (res.type === JsonParseType.Uigf24 || res.type === JsonParseType.Uigf23) {
     resMsg.value = {
       type: "info",
-      title: t("检测到 UIGFvx", [res.data.info.uigf_version]),
-      msg: t("升级为 UIGFv4.1"),
+      title: () => t("检测到 UIGFvx", [res.data.info.uigf_version]),
+      msg: () => t("升级为 UIGFv4.1"),
     };
     const regionTimeZone = "region_time_zone" in res.data.info ? res.data.info.region_time_zone : undefined;
     info.value = [
@@ -219,7 +227,7 @@ async function loadData(data: string): Promise<void> {
     return;
   }
   if (res.type === JsonParseType.Uigf22) {
-    resMsg.value = { type: "info", title: t("检测到 UIGFvx", ["2.2"]), msg: t("升级为 UIGFv4.1") };
+    resMsg.value = { type: "info", title: () => t("检测到 UIGFvx", ["2.2"]), msg: () => t("升级为 UIGFv4.1") };
     info.value = [
       { key: "UIGF版本", value: res.data.info.uigf_version },
       { key: "UID", value: res.data.info.uid },
