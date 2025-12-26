@@ -160,6 +160,16 @@ async function loadData(data: string): Promise<void> {
     };
     return;
   }
+  if (res.type === JsonParseType.Uigf42) {
+    resMsg.value = { type: "info", title: () => t("检测到 UIGFvx", ["4.2"]), msg: () => t("无需升级") };
+    info.value = [
+      { key: "UIGF版本", value: res.data.info.version },
+      { key: "导出应用", value: res.data.info.export_app },
+      { key: "导出应用版本", value: res.data.info.export_app_version },
+      { key: "导出时间", value: formatTimestamp(res.data.info.export_timestamp) },
+    ];
+    return;
+  }
   if (res.type === JsonParseType.Uigf41) {
     resMsg.value = { type: "info", title: () => t("检测到 UIGFvx", ["4.1"]), msg: () => t("无需升级") };
     info.value = [

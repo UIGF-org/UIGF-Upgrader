@@ -1,8 +1,7 @@
 /**
- * @file types/UIGF4.d.ts
- * @desc UIGF4数据结构
- * @see src/schema/uigf-4.0-schema.json
- * @since 2.0.0
+ * UIGF4数据结构
+ * @see src/schema/uigf-4.2-schema.json
+ * @since 2.1.0
  */
 
 declare namespace UIGF4 {
@@ -21,6 +20,7 @@ declare namespace UIGF4 {
     hk4e?: Array<Item<Hk4eItem>>;
     hkrpg?: Array<Item<HkrpgItem>>;
     nap?: Array<Item<NapItem>>;
+    hk4e_ugc?: Array<Item<Hk4eUgcItem>>;
   };
 
   /**
@@ -29,6 +29,12 @@ declare namespace UIGF4 {
    * @interface Schema1
    */
   type Schema1 = Schema;
+
+  /**
+   * UIGF 4.2 数据结构
+   * @since 2.1.0
+   */
+  type Schema2 = Schema;
 
   /**
    * @description UIGF4数据-仅原神
@@ -69,7 +75,7 @@ declare namespace UIGF4 {
     lang?: string;
   };
 
-  type ItemType = Hk4eItem | HkrpgItem | NapItem;
+  type ItemType = Hk4eItem | HkrpgItem | NapItem | Hk4eUgcItem;
 
   /**
    * @description 导出数据
@@ -169,4 +175,27 @@ declare namespace UIGF4 {
     rank_type?: string;
     id: string;
   };
+
+  /**
+   * 千星奇域卡池数据
+   * @since 2.1.0
+   */
+  type Hk4eUgcItem = {
+    /** 祈愿 ID */
+    id: string;
+    /** 卡池排期 ID */
+    schedule_id: string;
+    /** 物品类型 */
+    item_type: string;
+    /** 物品ID */
+    item_id: string;
+    /** 物品名称 */
+    item_name: string;
+    /** 星级 */
+    rank_type: string;
+    /** 时间 */
+    time: string;
+    /** 卡池类型 */
+    op_gacha_type: string;
+  }
 }
