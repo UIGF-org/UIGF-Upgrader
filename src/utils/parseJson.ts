@@ -1,7 +1,6 @@
 /**
- * @file utils/parseJson.ts
- * @description 解析json文件
- * @since 2.0.0
+ * 解析json文件
+ * @since 2.1.0
  */
 
 import srgf1Schema from "@schema/srgf-1.0-schema.json" with { type: "json" };
@@ -11,6 +10,7 @@ import uigf2Schema4 from "@schema/uigf-2.4-schema.json" with { type: "json" };
 import uigf3Schema from "@schema/uigf-3.0-schema.json" with { type: "json" };
 import uigf4Schema from "@schema/uigf-4.0-schema.json" with { type: "json" };
 import uigf41Schema from "@schema/uigf-4.1-schema.json" with { type: "json" };
+import uigf42Schema from "@schema/uigf-4.2-schema.json" with { type: "json" };
 import Ajv, { type ErrorObject } from "ajv";
 
 export const enum JsonParseType {
@@ -21,6 +21,7 @@ export const enum JsonParseType {
   Uigf3,
   Uigf4,
   Uigf41,
+  Uigf42,
   Unknown,
   Error,
   Invalid,
@@ -34,6 +35,7 @@ export type JsonParseRes =
   | { type: JsonParseType.Uigf3; data: UIGF3.Schema }
   | { type: JsonParseType.Uigf4; data: UIGF4.Schema }
   | { type: JsonParseType.Uigf41; data: UIGF4.Schema1 }
+  | { type: JsonParseType.Uigf42, data: UIGF4.Schema2 }
   | { type: JsonParseType.Unknown; data: string }
   | { type: JsonParseType.Error; data: string }
   | { type: JsonParseType.Invalid; data: Array<ErrorObject> };
@@ -74,6 +76,9 @@ function parseJson(jsonStr: string): JsonParseRes {
       if (json.info.version === "v4.1") {
         return validateJson(jsonStr, JsonParseType.Uigf41);
       }
+      if (json.info.version === "v4.2") {
+        return validateJson(jsonStr, JsonParseType.Uigf42);
+      }
     }
     return { type: JsonParseType.Unknown, data: "Unknown schema" };
   } catch (error) {
@@ -105,6 +110,8 @@ function validateJson(jsonStr: string, type: JsonParseType): JsonParseRes {
         return uigf4Schema;
       case JsonParseType.Uigf41:
         return uigf41Schema;
+      case JsonParseType.Uigf42:
+        return uigf42Schema;
       default:
         throw new Error("Unknown schema");
     }

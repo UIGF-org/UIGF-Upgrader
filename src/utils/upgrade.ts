@@ -16,7 +16,7 @@ function getExportInfo(): UIGF4.Info {
     export_app: "UIGF Upgrader",
     export_app_version: "2.0.0",
     export_timestamp: Math.floor(Date.now() / 1000).toString(),
-    version: "v4.1",
+    version: "v4.2",
   };
 }
 
